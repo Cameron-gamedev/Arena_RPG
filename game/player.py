@@ -225,8 +225,13 @@ class Player:
         if data is None:
             data = {}
 
-        definition = STATUS_DEFINITIONS[name]
-        stacking = definition.get("stacking", "refresh")
+        definition = STATUS_DEFINITIONS.get(name)
+        
+        if definition is None:
+            print(f"[Warning] Unknown status '{name}' attempted on {self.name}. Ignored.")
+            return
+        
+        stacking = data.get("stacking", definition.get("stacking", "refresh"))
 
         # Check if effect already exists
         for effect in self.status_effects:
@@ -245,13 +250,18 @@ class Player:
                     return
 
                 if stacking == "stack":
-                    # Add intensities together
-                    old_amt = effect["data"].get("amount_per_turn", 0)
-                    new_amt = data.get("amount_per_turn", 0)
-                    effect["data"]["amount_per_turn"] = old_amt + new_amt
-                    effect["duration"] = max(effect["duration"], duration)
-                    return
+                    old_data = effect.setdefault("data", {})
 
+                    old_amt = old_data.get("amount_per_turn", 0)
+                    new_amt = data.get("amount_per_turn", 0)
+                    old_data["amount_per_turn"] = old_amt + new_amt
+
+                    old_data["flat"] = old_data.get("flat", 0) + data.get("flat", 0)
+                    old_data["percent"] = old_data.get("percent", 0) + data.get("percent", 0)
+
+                    effect["duration"] = max(effect.get("duration", 0), duration)
+                    return
+                
         # If no existing effect, add new
         self.status_effects.append({
             "name": name,

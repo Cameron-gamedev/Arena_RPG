@@ -66,7 +66,7 @@ class Enemy:
             print(f"[Warning] Unknown status '{name}' attempted on {self.name}. Ignored.")
             return
 
-        stacking = definition.get("stacking", "refresh")
+        stacking = data.get("stacking", definition.get("stacking", "refresh"))
 
         for effect in self.status_effects:
             if effect.get("name") == name:

@@ -100,7 +100,17 @@ def enemy_use_action(enemy, player, action):
             if random.random() > effect_chance:
                 continue
 
-            player.apply_status(
+            # Determine target
+            target = player
+            if se.get("target") == "self":
+                target = enemy
+            elif se.get("target") == "ally" and hasattr(enemy, "current_wave_enemies"):
+                allies = [a for a in enemy.current_wave_enemies if not a.is_dead()]
+                if allies:
+                    target = min(allies, key=lambda a: a.current_hp / a.max_hp)
+
+            # Apply status
+            target.apply_status(
                 name=se["name"],
                 effect_type=definition["type"],
                 duration=se["duration"],

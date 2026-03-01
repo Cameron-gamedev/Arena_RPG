@@ -26,15 +26,17 @@ STATUS_DEFINITIONS = {
     # ============================
     # COMBAT BUFFS (Orc + General)
     # ============================
-    "BattleFury":        {"type":"buff", "stat":"attack",        "flat":0, "percent":0.20, "stacking":"refresh"},
-    "Rage":              {"type":"buff", "stat":"attack",        "flat":0, "percent":0.25, "stacking":"ignore"},
-    "Warcry":            {"type":"buff", "stat":"attack",        "flat":0, "percent":0.15, "stacking":"refresh"},
-    "BattleRhythm":      {"type":"buff", "stat":"sp_regen",      "flat":1, "percent":0.00, "stacking":"refresh"},
-    "DrumsOfBattle":     {"type":"buff", "stat":"sp_regen",      "flat":1, "percent":0.00, "stacking":"refresh"},
-    "BuffCritChance":    {"type":"buff", "stat":"crit_chance",   "flat":0, "percent":0.10, "stacking":"refresh"},
-    "BuffHitChance":     {"type":"buff", "stat":"hit_chance",    "flat":0, "percent":0.10, "stacking":"refresh"},
-    "ThickHideDefense":  {"type":"buff", "stat":"defense",       "flat":2, "percent":0.00, "stacking":"refresh"},
-    "ThickHideArmor":    {"type":"buff", "stat":"armor_defense", "flat":1, "percent":0.00, "stacking":"refresh"},
+    "BattleFury":       {"type":"buff", "stat":"attack",        "flat":0, "percent":0.20, "stacking":"refresh"},
+    "Rage":             {"type":"buff", "stat":"attack",        "flat":0, "percent":0.25, "stacking":"ignore"},
+    "Warcry":           {"type":"buff", "stat":"attack",        "flat":0, "percent":0.15, "stacking":"refresh"},
+    "BattleRhythm":     {"type":"buff", "stat":"sp_regen",      "flat":1, "percent":0.00, "stacking":"refresh"},
+    "DrumsOfBattle":    {"type":"buff", "stat":"sp_regen",      "flat":1, "percent":0.00, "stacking":"refresh"},
+    "BuffCritChance":   {"type":"buff", "stat":"crit_chance",   "flat":0, "percent":0.10, "stacking":"refresh"},
+    "BuffHitChance":    {"type":"buff", "stat":"hit_chance",    "flat":0, "percent":0.10, "stacking":"refresh"},
+    "ThickHideDefense": {"type":"buff", "stat":"defense",       "flat":2, "percent":0.00, "stacking":"refresh"},
+    "ThickHideArmor":   {"type":"buff", "stat":"armor_defense", "flat":1, "percent":0.00, "stacking":"refresh"},
+    "EssenceDefense":   {"type":"buff", "stat":"defense",       "flat":1, "percent":0.00, "stacking":"refresh"},
+
 
     # ============================
     # DEBUFFS

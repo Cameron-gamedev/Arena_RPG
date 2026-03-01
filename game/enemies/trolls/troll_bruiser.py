@@ -51,8 +51,8 @@ class TrollBruiser(Enemy):
             "name": "Thick Hide",
             "skip": True,
             "status_effects": [
-                {"name": "ThickHideDefense", "duration": 2},
-                {"name": "ThickHideArmor", "duration": 2}
+                {"name": "ThickHideDefense", "duration": 2, "target":"self"},
+                {"name": "ThickHideArmor", "duration": 2, "target":"self"}
             ]
         }
 

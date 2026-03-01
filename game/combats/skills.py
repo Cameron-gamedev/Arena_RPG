@@ -72,14 +72,28 @@ def choose_single_target(player, skill, enemies):
         hit_landed = True
         target.take_damage(dmg)
         print(f"Hit {i+1}: {skill['name']} deals {dmg} damage to {target.name}!")
-
+        
     if hit_landed and "status_effects" in skill:
         for se in skill["status_effects"]:
-            target.apply_status(
+            definition = STATUS_DEFINITIONS[se["name"]]
+
+            # Determine target
+            target_entity = target  # default = enemy you selected
+
+            if se.get("target") == "self":
+                target_entity = player
+
+            elif se.get("target") == "ally" and hasattr(player, "party"):
+                allies = [a for a in player.party if not a.is_dead() and a is not player]
+                if allies:
+                    target_entity = min(allies, key=lambda a: a.current_hp / a.max_hp)
+
+            # Apply status
+            target_entity.apply_status(
                 name=se["name"],
-                effect_type=STATUS_DEFINITIONS[se["name"]]["type"],
+                effect_type=definition["type"],
                 duration=se["duration"],
-                data={"amount_per_turn": se.get("amount_per_turn", 0)}
+                data=se.get("data", {})
             )
 
 
@@ -113,11 +127,25 @@ def choose_multi_targets(player, skill, enemies):
 
         if enemy_hit and "status_effects" in skill:
             for se in skill["status_effects"]:
-                enemy.apply_status(
+                definition = STATUS_DEFINITIONS[se["name"]]
+
+                # Determine target
+                target_entity = enemy  # default for multi-target
+
+                if se.get("target") == "self":
+                    target_entity = player
+
+                elif se.get("target") == "ally" and hasattr(player, "party"):
+                    allies = [a for a in player.party if not a.is_dead() and a is not player]
+                    if allies:
+                        target_entity = min(allies, key=lambda a: a.current_hp / a.max_hp)
+
+                # Apply status
+                target_entity.apply_status(
                     name=se["name"],
-                    effect_type=STATUS_DEFINITIONS[se["name"]]["type"],
+                    effect_type=definition["type"],
                     duration=se["duration"],
-                    data={"amount_per_turn": se.get("amount_per_turn", 0)}
+                    data=se.get("data", {})
                 )
 
 
@@ -161,14 +189,33 @@ def use_skill(player, skill_id, enemies):
 
     print(f"\n{player.name} uses {skill['name']}!")
 
+    # Non-damage skills (buffs, rituals, etc.)
+    print(f"\n{player.name} uses {skill['name']}!")
+
+    # NON-DAMAGE SKILLS (buffs, rituals, etc.)
+    if skill.get("skip") or "damage" not in skill:
+        # Apply status effects using the new targeting rules
+        if "status_effects" in skill:
+            for se in skill["status_effects"]:
+                definition = STATUS_DEFINITIONS[se["name"]]
+
+                # Determine target
+                if se.get("target") == "self":
+                    target = player
+                else:
+                    # default for non-damage skills is self unless explicitly enemy
+                    target = player
+
+                target.apply_status(
+                    name=se["name"],
+                    effect_type=definition["type"],
+                    duration=se["duration"],
+                    data=se.get("data", {})
+                )
+        return True
+
+    # DAMAGE SKILLS (unchanged behavior)
     if skill["target"] == "enemy":
         choose_single_target(player, skill, enemies)
     elif skill["target"] == "all_enemies":
         choose_multi_targets(player, skill, enemies)
-
-    cd = skill.get("cooldown", 0)
-    if cd > 0:
-        player.skill_cooldowns[skill_id] = cd
-
-    return True
-

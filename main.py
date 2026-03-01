@@ -9,6 +9,7 @@ from game.enemies.orcs.orc_beserker import OrcBerserker
 from game.enemies.orcs.orc_warcaller import OrcWarcaller
 from game.enemies.trolls.troll_bruiser import TrollBruiser
 from game.enemies.trolls.troll_regenerator import TrollRegenerator
+from game.enemies.trolls.troll_shaman import TrollShaman
 
 from game.items.sample_items import (
     iron_sword,champions_gauntlets, 
@@ -28,7 +29,7 @@ def main():
         base_def=5
     )
 
-    player.skills = ["Fireball", "Cleave","ArcaneNova"]
+    player.skills = ["Fireball", "Cleave","ArcaneNova","IronSkin"]
 
     # Equip items
     player.equipment.equip_item("weapon_main", iron_sword)
@@ -63,7 +64,7 @@ def main():
     ])"""
     
     engine  = CombatEngine(player, waves=[
-        [TrollBruiser(), TrollRegenerator()]
+        [TrollBruiser(), TrollRegenerator(), TrollShaman()]
     ])
     engine.start_combat()
 

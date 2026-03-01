@@ -12,8 +12,8 @@ SKILLS_DB = {
             "hits": 1
         },
         "status_effects":[
-            {"name":"Weaken", "duration":2},
-            {"name":"Stun", "duration": 1}
+            {"name":"Weaken", "duration":2, "target":"enemy"},
+            {"name":"Stun", "duration": 1, "target":"enemy"}
         ]
     },
 
@@ -30,8 +30,8 @@ SKILLS_DB = {
             "hits": 1
         },
         "status_effects":[
-            {"name":"Weaken", "duration":2},
-            {"name":"Stun", "duration": 1}
+            {"name":"Weaken", "duration":2,"target":"enemy"},
+            {"name":"Stun", "duration": 1,"target":"enemy"}
         ]
     },
 
@@ -62,14 +62,30 @@ SKILLS_DB = {
             {
                 "name": "Poison",
                 "duration": 3,
-                "amount_per_turn": 5
+                "amount_per_turn": 5,
+                "target":"enemy"
             }
         ],
         "cost_type": "sp",
         "cost": 10,
         "cooldown": 2
+    },
+
+    "IronSkin": {
+        "name": "Iron Skin",
+        "description": "Harden your body, increasing your Defense for 3 turns.",
+        "target": "self",
+        "cost_type": "sp",
+        "cost": 10,
+        "cooldown": 3,
+        "skip": True,
+        "status_effects": [
+            {
+                "name": "BuffVitality",   # or BuffDefense if you add one later
+                "duration": 3,
+                "target": "self",
+                "data": {"percent": 0.20}  # +20% defense
+            }
+        ]
     }
-
-
-
 }

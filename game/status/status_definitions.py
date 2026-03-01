@@ -49,7 +49,9 @@ STATUS_DEFINITIONS = {
     "ArmorShatter":  {"type": "debuff", "stat": "armor_defense", "flat": -1,       "stacking": "refresh"},
     "Intimidate":    {"type": "debuff", "stat": "hit_chance",    "percent": -0.10, "stacking": "refresh"},
     "CritDown":      {"type": "debuff", "stat": "crit_chance",   "percent": -0.10, "stacking": "refresh"},
+    "DodgeDown":     {"type": "debuff", "stat": "dodge_chance",  "percent": -0.05, "stacking": "refresh"},
 
+    
     # ============================
     # CROWD CONTROL & SPECIAL
     # ============================

@@ -7,6 +7,7 @@ from game.enemies.orcs.orc_grunt import OrcGrunt
 from game.enemies.orcs.orc_brute import OrcBrute
 from game.enemies.orcs.orc_beserker import OrcBerserker
 from game.enemies.orcs.orc_warcaller import OrcWarcaller
+from game.enemies.trolls.troll_bruiser import TrollBruiser
 
 from game.items.sample_items import (
     iron_sword,champions_gauntlets, 
@@ -47,12 +48,12 @@ def main():
     print("Crit Chance:", player.crit_chance)
     print("Max HP:", player.max_hp)
 
-    engine = CombatEngine(player, waves=[
+    """engine = CombatEngine(player, waves=[
         [GoblinSkirmisher(),GoblinAssassin() ],
         [GoblinSkirmisher(),GoblinSaboteur() ],
         [GoblinSkirmisher(), GoblinShaman()],
         [GoblinSkirmisher(), GoblinAssassin(), GoblinSaboteur()]
-    ])
+    ])"""
 
     """engine = CombatEngine(player, waves=[
         [OrcGrunt(), OrcBrute()],
@@ -60,6 +61,9 @@ def main():
         [OrcGrunt(), OrcWarcaller()]
     ])"""
     
+    engine  = CombatEngine(player, waves=[
+        [TrollBruiser()]
+    ])
     engine.start_combat()
 
 

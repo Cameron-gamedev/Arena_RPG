@@ -1,0 +1,96 @@
+from game.enemies.enemy import Enemy
+import random
+
+
+class TrollFirebelly(Enemy):
+    def __init__(self):
+        name = "Troll Firebelly"
+        max_hp = 95
+        attack = 12
+        defense = 9
+        super().__init__(name, max_hp, attack, defense)
+
+        # Core stats
+        self.armor_defense = 2
+        self.hit_chance = 0.65
+        self.dodge_chance = 0.03
+        self.crit_chance = 0.05
+        self.speed = 0.6
+
+        # Cooldowns
+        self.ash_cooldown = 0
+
+        # ============================
+        # Ability: Smoldering Breath
+        # ============================
+        self.smoldering_breath = {
+            "name": "Smoldering Breath",
+            "skip": True,
+            "status_effects": [
+                {
+                    "name": "Burn",
+                    "duration": 3,
+                    "target": "player",
+                    "data": {"amount_per_turn": 6}
+                }
+            ]
+        }
+
+        # ============================
+        # Ability: Cinder Slam
+        # ============================
+        self.cinder_slam = {
+            "name": "Cinder Slam",
+            "damage": {
+                "flat": 6,
+                "scaling": {"attack": 0.40},
+                "hits": 1
+            },
+            "status_effects": [
+                {
+                    "name": "Burn",
+                    "duration": 3,
+                    "target": "player",
+                    "data": {"amount_per_turn": 4}
+                }
+            ]
+        }
+
+        # ============================
+        # Ability: Ash Cloud
+        # ============================
+        self.ash_cloud = {
+            "name": "Ash Cloud",
+            "skip": True,
+            "status_effects": [
+                {
+                    "name": "AshenVeil",
+                    "duration": 2,
+                    "target": "player",
+                }
+            ]
+        }
+
+    # ============================================================
+    # AI Behavior — DOT Pressure + Accuracy Debuff
+    # ============================================================
+    def choose_action(self, player, allies=None):
+
+        # Reduce cooldowns
+        if self.ash_cooldown > 0:
+            self.ash_cooldown -= 1
+
+        # 1. If player is NOT burning → prioritize Smoldering Breath
+        if not player.has_status("Burn"):
+            # 70% chance to apply Burn immediately
+            if random.random() < 0.70:
+                return self.smoldering_breath
+
+        # 2. Ash Cloud occasionally (accuracy debuff)
+        if self.ash_cooldown == 0:
+            if random.random() < 0.25:
+                self.ash_cooldown = 3
+                return self.ash_cloud
+
+        # 3. Default: Cinder Slam (refresh Burn + damage)
+        return self.cinder_slam

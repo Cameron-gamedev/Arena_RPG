@@ -10,6 +10,7 @@ from game.enemies.orcs.orc_warcaller import OrcWarcaller
 from game.enemies.trolls.troll_bruiser import TrollBruiser
 from game.enemies.trolls.troll_regenerator import TrollRegenerator
 from game.enemies.trolls.troll_shaman import TrollShaman
+from game.enemies.trolls.troll_firebelly import TrollFirebelly
 
 from game.items.sample_items import (
     iron_sword,champions_gauntlets, 
@@ -64,8 +65,9 @@ def main():
     ])"""
     
     engine  = CombatEngine(player, waves=[
-        [TrollBruiser(), TrollRegenerator(), TrollShaman()]
+        [TrollFirebelly()]
     ])
+    
     engine.start_combat()
 
 

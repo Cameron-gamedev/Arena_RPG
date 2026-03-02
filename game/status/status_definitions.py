@@ -44,12 +44,13 @@ STATUS_DEFINITIONS = {
     "Weaken":        {"type": "debuff", "stat": "attack",        "percent": -0.10, "stacking": "refresh"},
     "Vulnerable":    {"type": "debuff", "stat": "defense",       "percent": -0.25, "stacking": "refresh"},
     "Slow":          {"type": "debuff", "stat": "agility",       "percent": -0.20, "stacking": "refresh"},
-    "AccuracyDown":  {"type": "debuff", "stat": "hit_chance",    "percent": -0.20, "stacking": "refresh", "chance": 0.25},
+    "AccuracyDown":  {"type": "debuff", "stat": "hit_chance",    "percent": -0.20, "stacking": "refresh"},
     "GuardBreak":    {"type": "debuff", "stat": "defense",       "percent": -0.20, "stacking": "refresh"},
     "ArmorShatter":  {"type": "debuff", "stat": "armor_defense", "flat": -1,       "stacking": "refresh"},
     "Intimidate":    {"type": "debuff", "stat": "hit_chance",    "percent": -0.10, "stacking": "refresh"},
     "CritDown":      {"type": "debuff", "stat": "crit_chance",   "percent": -0.10, "stacking": "refresh"},
     "DodgeDown":     {"type": "debuff", "stat": "dodge_chance",  "percent": -0.05, "stacking": "refresh"},
+    "AshenVeil":     {"type": "debuff", "stat": "hit_chance",    "percent": -0.15, "stacking": "refresh"},
 
     
     # ============================

@@ -65,7 +65,7 @@ def main():
     ])"""
     
     engine  = CombatEngine(player, waves=[
-        [TrollFirebelly()]
+        [GoblinSaboteur(),GoblinShaman(), GoblinAssassin()]
     ])
     
     engine.start_combat()

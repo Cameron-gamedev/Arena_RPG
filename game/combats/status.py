@@ -1,4 +1,6 @@
 from game.status.status_definitions import STATUS_DEFINITIONS
+from game.combats.healing import apply_heal
+
 
 def process_status_effects(target):
     if not hasattr(target, "status_effects") or not target.status_effects:
@@ -21,17 +23,14 @@ def process_status_effects(target):
         if effect_type == "hot":
             resource = definition["target"]
             amount = data.get("amount_per_turn", 0)
+            apply_heal(target, amount, resource=resource, source=name)
 
-            if resource == "hp":
-                before = target.current_hp
-                target.current_hp = min(target.max_hp, target.current_hp + amount)
-                healed = target.current_hp - before
-                print(f"{target.name} regenerates {healed} HP from {name}.")
-            elif resource == "mp":
+            if resource == "mp":
                 before = target.current_mp
                 target.current_mp = min(target.max_mp, target.current_mp + amount)
                 restored = target.current_mp - before
                 print(f"{target.name} regenerates {restored} MP from {name}.")
+
             elif resource == "sp":
                 before = target.current_sp
                 target.current_sp = min(target.max_sp, target.current_sp + amount)
@@ -40,14 +39,16 @@ def process_status_effects(target):
 
         # DOT
         elif effect_type == "dot":
-            resource = definition["target"]
             amount = data.get("amount_per_turn", 0)
+            applier = data.get("applier")
+            if applier is not None and hasattr(applier, "name"):
+                attacker_obj = applier
+            else:
+                attacker_obj = None
 
-            if resource == "hp":
-                before = target.current_hp
-                target.current_hp = max(0, target.current_hp - amount)
-                dmg = before - target.current_hp
-                print(f"{target.name} takes {dmg} damage from {name}!")
+            target.take_damage(attacker=attacker_obj, amount=amount, source=name)
+
+
 
         effect["duration"] -= 1
         if effect["duration"] <= 0:

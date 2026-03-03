@@ -1,4 +1,3 @@
-
 from game.enemies.enemy import Enemy
 import random
 
@@ -31,14 +30,16 @@ class OrcBrute(Enemy):
 
         self.heavy_slam = {
             "name": "Heavy Slam",
-            "damage": {"flat": 6, "scaling": {"attack": 0.50}, "hits": 1}
+            "damage": {"flat": 6, "scaling": {"attack": 0.50}, "hits": 1},
+            "status_effects": []
         }
 
         self.winding_up = {"name": "Winding Up", "skip": True}
 
         self.crushing_blow = {
             "name": "Crushing Blow",
-            "damage": {"flat": 12, "scaling": {"attack": 0.90}, "hits": 1}
+            "damage": {"flat": 12, "scaling": {"attack": 0.90}, "hits": 1},
+            "status_effects": []
         }
 
     def choose_action(self, player, allies=None):
@@ -46,8 +47,8 @@ class OrcBrute(Enemy):
             self.rage_triggered = True
             print(f"{self.name} enters a furious RAGE!")
 
-            self.apply_status("Rage", "buff", 999, {"flat": 0, "percent": 0.25})
-            self.apply_status("BuffCritChance", "buff", 999, {"flat": 0.10})
+            self.apply_status("Rage", "buff", 999, {"percent": 0.25})
+            self.apply_status("BuffCritChance", "buff", 999, {"percent": 0.10})
             self.apply_status("GuardBreak", "debuff", 2, {})
 
             return {"name": "Rage", "skip": True}

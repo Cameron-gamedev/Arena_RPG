@@ -1,5 +1,3 @@
-# game/enemies/orcs/orc_warcaller.py
-
 from game.enemies.enemy import Enemy
 import random
 
@@ -42,7 +40,8 @@ class OrcWarcaller(Enemy):
 
         self.basic_attack = {
             "name": "Warcaller Strike",
-            "damage": {"flat": 3, "scaling": {"attack": 0.40}, "hits": 1}
+            "damage": {"flat": 3, "scaling": {"attack": 0.40}, "hits": 1},
+            "status_effects": []
         }
 
     def choose_action(self, player, allies=None):
@@ -60,7 +59,7 @@ class OrcWarcaller(Enemy):
                     self.warcry_cd = 3
                     for a in allies:
                         if not a.is_dead():
-                            a.apply_status("Warcry", "buff", 2, {"flat": 0, "percent": 0.15})
+                            a.apply_status("Warcry", "buff", 2, {"percent": 0.15})
                     return self.warcry
 
         if self.drums_cd == 0:

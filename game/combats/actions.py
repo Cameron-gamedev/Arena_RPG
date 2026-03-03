@@ -1,5 +1,7 @@
 from game.combats.damage import calculate_damage
 from game.status.status_definitions import STATUS_DEFINITIONS
+from game.status.apply_status_effects import apply_status_effects
+
 import random
 
 # ============================================================
@@ -18,57 +20,17 @@ def player_attack(player, enemy):
     if is_crit:
         print(">>> CRITICAL HIT!")
 
-    enemy.take_damage(damage)
-    print(f"{player.name} attacks {enemy.name} for {damage} damage!")
+    enemy.take_damage(player, damage, source="Basic Attack")
+
 
 
 # ============================================================
 # ENEMY ACTION SYSTEM (FULLY UNIFIED)
 # ============================================================
-
-def apply_enemy_status_effects(effect_list, enemy, player, action, hit_landed):
-    if not effect_list:
-        return
-
-    for se in effect_list:
-        definition = STATUS_DEFINITIONS[se["name"]]
-
-        # Respect chance
-        effect_chance = se.get("chance", definition.get("chance", 1.0))
-        if random.random() > effect_chance:
-            continue
-
-        # Skip if damage-based and hit missed
-        if action.get("damage") and not hit_landed:
-            continue
-
-        # Determine target
-        target = player  # default
-
-        if se.get("target") == "self":
-            target = enemy
-
-        elif se.get("target") == "ally" and hasattr(enemy, "current_wave_enemies"):
-            allies = [a for a in enemy.current_wave_enemies if not a.is_dead() and a is not enemy]
-            if allies:
-                target = min(allies, key=lambda a: a.current_hp / a.max_hp)
-
-        # Apply status
-        target.apply_status(
-            name=se["name"],
-            effect_type=definition["type"],
-            duration=se["duration"],
-            data=se.get("data", {})
-        )
-
-        # Special stun logic
-        if "stun_chance" in definition and target is player:
-            if random.random() < definition["stun_chance"]:
-                player.apply_status("Stun", "stun", 1, {})
-                print(f"{player.name} is jolted by lightning and STUNNED!")
-
-
 def enemy_use_action(enemy, player, action):
+
+    # Always define hit_landed so it exists for all branches
+    hit_landed = False
 
     # ------------------------------------------------------------
     # 1. NON-DAMAGE ACTIONS (buffs, curses, rituals)
@@ -76,11 +38,17 @@ def enemy_use_action(enemy, player, action):
     if action.get("skip") or "damage" not in action:
         print(f"[AI DEBUG] {enemy.name} uses {action['name']} (non-damage action)")
         print("="*50)
-        apply_enemy_status_effects(
-            action.get("status_effects", []),
-            enemy,
-            player,
-            action,
+
+        apply_status_effects(
+            source=enemy,
+            target_group={
+                "default": player,
+                "player": player,
+                "self": enemy,
+                "enemies": getattr(enemy, "current_wave_enemies", []),
+                "allies": getattr(enemy, "current_wave_enemies", [])
+            },
+            effect_list=action.get("status_effects", []),
             hit_landed=True
         )
         return
@@ -95,15 +63,19 @@ def enemy_use_action(enemy, player, action):
     
     damage_block = action["damage"]
     hits = damage_block.get("hits", 1)
-    second_hit_acc = action.get("second_hit_accuracy")
 
-    hit_landed = False
+    # Multi-hit accuracy support
+    second_hit_acc = action.get("second_hit_accuracy")
+    third_hit_acc = action.get("third_hit_accuracy")
 
     for hit_index in range(hits):
         original_hit = enemy.hit_chance
 
+        # Support for 2nd and 3rd hit accuracy overrides
         if hit_index == 1 and second_hit_acc is not None:
             enemy.hit_chance = second_hit_acc
+        elif hit_index == 2 and third_hit_acc is not None:
+            enemy.hit_chance = third_hit_acc
 
         dmg, is_crit, dodged = calculate_damage(enemy, player, action)
         enemy.hit_chance = original_hit
@@ -116,32 +88,39 @@ def enemy_use_action(enemy, player, action):
             print(f"Hit {hit_index+1}: CRITICAL HIT!")
 
         hit_landed = True
-        player.take_damage(enemy, dmg)
+        player.take_damage(enemy, dmg, source=action["name"])
         print(f"Hit {hit_index+1}: {action['name']} | {enemy.name} deals {dmg} damage!")
 
     # ------------------------------------------------------------
     # 3. Apply status effects (unified)
     # ------------------------------------------------------------
-    apply_enemy_status_effects(
-        action.get("status_effects", []),
-        enemy,
-        player,
-        action,
-        hit_landed
+    apply_status_effects(
+        source=enemy,
+        target_group={
+            "default": player,
+            "player": player,
+            "self": enemy,
+            "enemies": getattr(enemy, "current_wave_enemies", []),
+            "allies": getattr(enemy, "current_wave_enemies", [])
+        },
+        effect_list=action.get("status_effects", []),
+        hit_landed=hit_landed
     )
 
     # ------------------------------------------------------------
-    # 4. Apply HoT effects
+    # 4. Apply HoT effects (unified)
     # ------------------------------------------------------------
     if "hot_effects" in action:
         for hot in action["hot_effects"]:
             definition = STATUS_DEFINITIONS[hot["name"]]
 
+            # Determine target
             target = player
             if hot.get("target") == "self":
                 target = enemy
-            elif hot.get("target") == "ally" and hasattr(enemy, "current_wave_enemies"):
-                allies = [a for a in enemy.current_wave_enemies if not a.is_dead() and a is not enemy]
+            elif hot.get("target") == "ally":
+                allies = getattr(enemy, "current_wave_enemies", [])
+                allies = [a for a in allies if not a.is_dead() and a is not enemy]
                 if allies:
                     target = min(allies, key=lambda a: a.current_hp / a.max_hp)
 

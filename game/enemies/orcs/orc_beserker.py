@@ -1,5 +1,3 @@
-# game/enemies/orcs/orc_berserker.py
-
 from game.enemies.enemy import Enemy
 import random
 
@@ -34,7 +32,8 @@ class OrcBerserker(Enemy):
             "name": "Wild Slash",
             "damage": {"flat": 2, "scaling": {"attack": 0.30}, "hits": 3},
             "second_hit_accuracy": 0.70,
-            "third_hit_accuracy": 0.50
+            "third_hit_accuracy": 0.50,
+            "status_effects": []
         }
 
         self.blood_frenzy = {"name": "Blood Frenzy", "skip": True}
@@ -42,7 +41,8 @@ class OrcBerserker(Enemy):
         self.reckless_charge = {
             "name": "Reckless Charge",
             "damage": {"flat": 8, "scaling": {"attack": 0.60}, "hits": 1},
-            "self_damage": 5
+            "self_damage": 5,
+            "status_effects": []
         }
 
     def choose_action(self, player, allies=None):
@@ -50,8 +50,8 @@ class OrcBerserker(Enemy):
             self.frenzy_triggered = True
             print(f"{self.name} enters a violent Frenzy!")
 
-            self.apply_status("Rage", "buff", 999, {"flat": 0, "percent": 0.25})
-            self.apply_status("BuffCritChance", "buff", 999, {"flat": 0.15})
+            self.apply_status("Rage", "buff", 999, {"percent": 0.25})
+            self.apply_status("BuffCritChance", "buff", 999, {"percent": 0.15})
             self.apply_status("GuardBreak", "debuff", 2, {})
 
             self.passive_sp_regen += 1
@@ -60,7 +60,7 @@ class OrcBerserker(Enemy):
         if not self.blood_frenzy_used:
             self.blood_frenzy_used = True
             print(f"{self.name} whips itself into a Blood Frenzy!")
-            self.apply_status("BattleFury", "buff", 3, {"flat": 0, "percent": 0.20})
+            self.apply_status("BattleFury", "buff", 3, {"percent": 0.20})
             return self.blood_frenzy
 
         if self.current_hp <= self.max_hp * 0.30 and random.random() < 0.50:

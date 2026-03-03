@@ -1,5 +1,3 @@
-# game/enemies/orcs/orc_grunt.py
-
 from game.enemies.enemy import Enemy
 import random
 
@@ -29,7 +27,8 @@ class OrcGrunt(Enemy):
 
         self.heavy_swing = {
             "name": "Heavy Swing",
-            "damage": {"flat": 4, "scaling": {"attack": 0.40}, "hits": 1}
+            "damage": {"flat": 4, "scaling": {"attack": 0.40}, "hits": 1},
+            "status_effects": []
         }
 
         self.shield_bash = {
@@ -44,7 +43,7 @@ class OrcGrunt(Enemy):
 
     def choose_action(self, player, allies=None):
         if not self.has_status("BattleFury"):
-            self.apply_status("BattleFury", "buff", 2, {"flat": 0, "percent": 0.20})
+            self.apply_status("BattleFury", "buff", 2, {"percent": 0.20})
             print(f"{self.name} lets out a thunderous Battle Roar!")
             return self.battle_roar
 

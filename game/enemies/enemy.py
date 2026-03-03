@@ -1,5 +1,5 @@
-import random
 from game.status.status_definitions import STATUS_DEFINITIONS
+from game.status.stat_modifiers import accumulate_status_modifiers
 
 class Enemy:
     def __init__(self, name, max_hp, attack, defense):
@@ -15,7 +15,6 @@ class Enemy:
         self.max_mp = 35
         self.current_mp = self.max_mp
     
-        
         self.dodge_chance = 0.25
         self.hit_chance = 0.0
         self.crit_chance = 0.15
@@ -34,16 +33,21 @@ class Enemy:
 
         self.status_effects = []
 
-        self.attack_profile = {}
-        
     
     def choose_action(self, player, allies=None):
-         return self.attack_profile
+        raise NotImplementedError(f"{self.name} has no AI defined.")
 
     
-    def take_damage(self, amount):
+    def take_damage(self, attacker, amount, source=None):
+        amount = max(0, int(amount))
+
+        before = self.current_hp
         self.current_hp = max(0, self.current_hp - amount)
-        #print(f"{self.name} takes {amount} damage (HP {self.current_hp}/{self.max_hp}).")
+
+        src_text = f" with {source}" if source else ""
+        attacker_name = attacker.name if attacker is not None else "Unknown"
+        print(f"{attacker_name} hits {self.name}{src_text} for {amount} damage! "
+              f"({before} → {self.current_hp})")
 
 
     def is_dead(self):
@@ -109,20 +113,20 @@ class Enemy:
     
 
     def recalc_stats(self):
-        self.attack = self.basic_attack
+        # Reset to base
+        self.attack = self.base_attack
         self.defense = self.base_defense
         self.hit_chance = self.base_hit
         self.dodge_chance = self.base_dodge
         self.crit_chance = self.base_crit
+        self.armor_defense = getattr(self, "armor_defense", 0)
 
-        for effect in self.status_effects:
-            definition=STATUS_DEFINITIONS[effect["name"]]
-            if effect["type"] == "buff":
-                stat = definition["stat"]
-                flat = effect["data"].get("flat", 0)
-                percent = effect["data"].get("percent", 0)
-                setattr(self, stat, getattr(self, stat) * (1 + percent) + flat)
-            elif effect["type"] == "debuff":
-                stat = definition["stat"]
-                percent = definition.get("percent", 0)
-                setattr(self, stat, getattr(self, stat) * (1 + percent))
+        # Collect modifiers
+        status_mods = accumulate_status_modifiers(self, {})
+
+        # Apply modifiers
+        for stat, mod in status_mods.items():
+            if hasattr(self, stat):
+                base_value = getattr(self, stat)
+                new_value = (base_value + mod["flat"]) * (1 + mod["percent"])
+                setattr(self, stat, new_value)

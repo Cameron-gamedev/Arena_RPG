@@ -1,5 +1,7 @@
 import random
 from game.equipment import Equipment  
+from game.status.stat_modifiers import accumulate_status_modifiers
+from game.status.status_definitions import STATUS_DEFINITIONS
 
 
 class Player:
@@ -93,19 +95,16 @@ class Player:
         # Initial stat calculation
         self.recalculate_stats()
 
+
     def is_dead(self):
         return self.current_hp <= 0
 
-    # -----------------------------
-    # XP REQUIREMENT FORMULA
-    # -----------------------------
+    
     def xp_required_for_next_level(self):
         base_xp = 100
         return int(base_xp * (self.level ** 1.5))
 
-    # -----------------------------
-    # GAIN XP
-    # -----------------------------
+    
     def gain_xp(self, amount):
         self.current_xp += amount
 
@@ -113,9 +112,7 @@ class Player:
             self.current_xp -= self.xp_required_for_next_level()
             self.level_up()
 
-    # -----------------------------
-    # LEVEL UP LOGIC
-    # -----------------------------
+   
     def level_up(self):
         from game.skills.skill_unlocks import SKILL_Unlock_TABLE
         from game.skills.skills import SKILLS_DB
@@ -154,9 +151,7 @@ class Player:
         heal_amount = int(self.max_hp * 0.5)
         self.current_hp = min(self.max_hp, self.current_hp + heal_amount)
 
-    # -----------------------------
-    # FINAL STAT PIPELINE
-    # -----------------------------
+    
     def get_final_stats(self):
         """
         Computes final stats using:
@@ -206,9 +201,7 @@ class Player:
 
         return breakdown
     
-    # -----------------------------
-    # RECALCULATE DERIVED STATS
-    # -----------------------------
+   
     def _apply_derived_modifiers(self, stat_name, base_value):
         """
         Applies flat and percent modifiers to a derived stat.
@@ -276,7 +269,6 @@ class Player:
 
 
     def recalculate_stats(self):
-        from game.status.status_definitions import STATUS_DEFINITIONS
         # --- 1. Preserve HP ratio ---
         hp_ratio = 1.0 if self.max_hp == 0 else self.current_hp / self.max_hp
 
@@ -284,33 +276,16 @@ class Player:
         self.get_final_stats()
 
         # --- Apply unified buff effects ---
-        for effect in self.status_effects:
-            if effect["type"] == "buff":
-                stat = STATUS_DEFINITIONS[effect["name"]]["stat"]
-                flat = effect["data"].get("flat", 0)
-                percent = effect["data"].get("percent", 0)
 
-                # Ensure stat exists
-                if stat not in self.final_stats:
-                    self.final_stats[stat] = {"base": 0, "flat": 0, "percent": 0, "final": None}
+        status_mods = accumulate_status_modifiers(self, self.final_stats)
 
-                self.final_stats[stat]["flat"] += flat
-                self.final_stats[stat]["percent"] += percent
-            
-            elif effect["type"] == "debuff":
-                stat = STATUS_DEFINITIONS[effect["name"]]["stat"]
-                percent = STATUS_DEFINITIONS[effect["name"]].get("percent", 0)
+        # Apply modifiers to final_stats
+        for stat, mod in status_mods.items():
+            if stat not in self.final_stats:
+                self.final_stats[stat] = {"base": 0, "flat": 0, "percent": 0, "final": None}
 
-                if stat not in self.final_stats:
-                    self.final_stats[stat] = {"base": 0, "flat": 0, "percent": 0, "final": None}
-
-                self.final_stats[stat]["percent"] += percent
-
-                # Additional custom fields
-                if "hit_chance_penalty" in STATUS_DEFINITIONS[effect["name"]]:
-                    penalty = STATUS_DEFINITIONS[effect["name"]]["hit_chance_penalty"]
-                    self.final_stats["hit_chance"]["flat"] += penalty
-
+            self.final_stats[stat]["flat"] += mod["flat"]
+            self.final_stats[stat]["percent"] += mod["percent"]
 
         STR = self.final_stats["strength"]["final"]
         AGI = self.final_stats["agility"]["final"]
@@ -377,6 +352,13 @@ class Player:
         return True
 
 
-    def take_damage(self, enemy,  damage):
-        self.current_hp = max(0, (self.current_hp - damage))
-        #print(f"{enemy.name} attacks {self.name} for {damage} damage!")
+    def take_damage(self, attacker, amount, source=None):
+        amount = max(0, int(amount))
+
+        before = self.current_hp
+        self.current_hp = max(0, self.current_hp - amount)
+
+        src_text = f" with {source}" if source else ""
+        attacker_name = attacker.name if attacker is not None else "Unknown"
+        print(f"{attacker_name} hits {self.name}{src_text} for {amount} damage! "
+              f"({before} → {self.current_hp})")

@@ -1,39 +1,7 @@
 from game.combats.damage import calculate_damage
 from game.status.status_definitions import STATUS_DEFINITIONS
-
-
-# ============================================================
-# Helper: Apply status effects with targeting
-# ============================================================
-def apply_player_status_effects(player, target, skill, hit_landed):
-    if "status_effects" not in skill:
-        return
-
-    for se in skill["status_effects"]:
-        definition = STATUS_DEFINITIONS[se["name"]]
-
-        # Skip if damage-based and hit missed
-        if skill.get("damage") and not hit_landed:
-            continue
-
-        # Determine target
-        target_entity = target  # default = enemy
-
-        if se.get("target") == "self":
-            target_entity = player
-
-        elif se.get("target") == "ally" and hasattr(player, "party"):
-            allies = [a for a in player.party if not a.is_dead() and a is not player]
-            if allies:
-                target_entity = min(allies, key=lambda a: a.current_hp / a.max_hp)
-
-        # Apply status
-        target_entity.apply_status(
-            name=se["name"],
-            effect_type=definition["type"],
-            duration=se["duration"],
-            data=se.get("data", {})
-        )
+from game.combats.deal_damage import deal_damage
+from game.status.apply_status_effects import apply_status_effects
 
 
 # ============================================================
@@ -112,11 +80,21 @@ def choose_single_target(player, skill, enemies):
             print(f"Hit {i+1}: >> CRITICAL HIT!")
 
         hit_landed = True
-        target.take_damage(dmg)
-        print(f"Hit {i+1}: {skill['name']} deals {dmg} damage to {target.name}!")
+        deal_damage(player, target, dmg, skill["name"])
 
     # Status effects
-    apply_player_status_effects(player, target, skill, hit_landed)
+    apply_status_effects(
+        source=player,
+        target_group={
+            "default": target,
+            "player": player,
+            "enemies": enemies,
+            "self": player,
+            "allies": getattr(player, "party", [])
+        },
+        effect_list=skill.get("status_effects", []),
+        hit_landed=hit_landed
+    )
 
 
 # ============================================================
@@ -147,10 +125,22 @@ def choose_multi_targets(player, skill, enemies):
                 print(f"  Hit {i+1}: >>> CRITICAL HIT!")
 
             enemy_hit = True
-            enemy.take_damage(dmg)
-            print(f"  Hit {i+1}: {dmg} damage!")
+            deal_damage(player, enemy, dmg, skill["name"])
+        
+        # Status effects
+        apply_status_effects(
+            source=player,
+            target_group={
+                "default": enemy,
+                "player": player,
+                "self": player,
+                "enemies": enemies,
+                "allies": getattr(player, "party", [])
+            },
+            effect_list=skill.get("status_effects", []),
+            hit_landed=enemy_hit
+        )
 
-        apply_player_status_effects(player, enemy, skill, enemy_hit)
 
 
 # ============================================================
@@ -200,10 +190,22 @@ def use_skill(player, skill_id, enemies):
 
     print(f"\n{player.name} uses {skill['name']}!")
 
-    # Non-damage skills (buffs, rituals)
+    # Status effects
     if skill.get("skip") or "damage" not in skill:
-        apply_player_status_effects(player, player, skill, hit_landed=True)
+        apply_status_effects(
+            source=player,
+            target_group={
+                "default": player,
+                "player": player,
+                "self": player,
+                "enemies": enemies,
+                "allies": getattr(player, "party", [])
+            },
+            effect_list=skill.get("status_effects", []),
+            hit_landed=True
+        )
         return True
+
 
     # Damage skills
     if skill["target"] == "enemy":

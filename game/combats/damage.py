@@ -39,10 +39,6 @@ def calculate_damage(attacker, defender, skill=None):
             stat_value = getattr(attacker, stat_name, 0)
             base_damage += stat_value * factor
 
-        hits = dmg_info.get("hits", 1)
-    else:
-        hits = 1
-
     if is_crit:
         base_damage = int(base_damage * 1.5)
 

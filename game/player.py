@@ -92,7 +92,33 @@ class Player:
         self.active_buffs = []
         self.status_effects = []
 
+        # -----------------------------
+        # Set Player Class
+        # -----------------------------
+        self.player_class_name = None
+        self.player_class = None
+
         # Initial stat calculation
+        self.recalculate_stats()
+
+
+    def set_class(self, class_name):
+        from game.classes.class_definitions import CLASS_DEFINITIONS
+        self.player_class_name = class_name
+        self.player_class = CLASS_DEFINITIONS[class_name]
+
+        # Apply base stats
+        for stat, value in self.player_class["base_stats"].items():
+            setattr(self, stat, value)
+            self.base_stats[stat] = value
+
+        # Apply regen
+        self.passive_hp_regen = self.player_class["regen"]["hp"]
+        self.passive_mp_regen = self.player_class["regen"]["mp"]
+        self.passive_sp_regen = self.player_class["regen"]["sp"]
+
+        self.class_passives = self.player_class.get("passives", {})
+
         self.recalculate_stats()
 
 
@@ -114,42 +140,35 @@ class Player:
 
    
     def level_up(self):
-        from game.skills.skill_unlocks import SKILL_Unlock_TABLE
-        from game.skills.skills import SKILLS_DB
         self.level += 1
+        growth = self.player_class["growth"]
 
-        stats = ["strength", "agility", "vitality", "intelligence"]
-        weights = [0.40, 0.25, 0.20, 0.15]
+        self.strength += growth["strength"]
+        self.agility += growth["agility"]
+        self.vitality += growth["vitality"]
+        self.intelligence += growth["intelligence"]
 
-        big_stat = random.choices(stats, weights)[0]
-        remaining = [s for s in stats if s != big_stat]
-        small_stats = random.sample(remaining, 2)
+        # Sync base_stats
+        self.base_stats["strength"] = self.strength
+        self.base_stats["agility"] = self.agility
+        self.base_stats["vitality"] = self.vitality
+        self.base_stats["intelligence"] = self.intelligence
 
-        # Apply stat increases (attributes)
-        setattr(self, big_stat, getattr(self, big_stat) + 2)
-        for s in small_stats:
-            setattr(self, s, getattr(self, s) + 1)
+        # Resource scaling
+        res = self.player_class["resources"]
+        self.max_hp += res["hp_per_level"]
+        self.max_mp += res["mp_per_level"]
+        self.max_sp += res["sp_per_level"]
 
-        # NEW: Keep base_stats dictionary in sync
-        self.base_stats[big_stat] = getattr(self, big_stat)
-        for s in small_stats:
-            self.base_stats[s] = getattr(self, s)
+        # Skill unlocks
+        if self.level in self.player_class["skills"]:
+            for skill_id in self.player_class["skills"][self.level]:
+                self.skills.append(skill_id)
 
-        # Recalculate stats
+        self.current_hp = min(self.max_hp, self.current_hp + int(self.max_hp * 0.5))
+
+
         self.recalculate_stats()
-
-        # --- Skill Unlocks ---
-        if self.level in SKILL_Unlock_TABLE:
-            for skill_id in SKILL_Unlock_TABLE[self.level]:
-                if skill_id not in self.skills:
-                    self.skills.append(skill_id)
-                    
-                    skill_name = SKILLS_DB[skill_id]["name"]
-                    print(f"*** New Skill Unlocked: {skill_name}! ***")
-
-        # Restore 50% HP
-        heal_amount = int(self.max_hp * 0.5)
-        self.current_hp = min(self.max_hp, self.current_hp + heal_amount)
 
     
     def get_final_stats(self):
@@ -276,7 +295,6 @@ class Player:
         self.get_final_stats()
 
         # --- Apply unified buff effects ---
-
         status_mods = accumulate_status_modifiers(self, self.final_stats)
 
         # Apply modifiers to final_stats
@@ -330,6 +348,31 @@ class Player:
 
         self.dodge_chance = 0.50 +(AGI * 0.002)
         self.dodge_chance = self._apply_derived_modifiers("dodge_chance", self.dodge_chance)
+
+        # --- Apply class passives (linear scaling) ---
+        for passive, values in self.class_passives.items():
+            base = values.get("base", 0)
+            scale = values.get("scale", 0)
+            value = base + (self.level - 1) * scale
+
+            if passive == "armor_bonus":
+                self.final_stats.setdefault("defense", {"base":0,"flat":0,"percent":0,"final":None})
+                self.final_stats["defense"]["flat"] += value
+
+            elif passive == "crit_bonus":
+                self.final_stats.setdefault("crit_chance", {"base":0,"flat":0,"percent":0,"final":None})
+                self.final_stats["crit_chance"]["flat"] += value
+
+            elif passive == "dodge_bonus":
+                self.final_stats.setdefault("dodge_chance", {"base":0,"flat":0,"percent":0,"final":None})
+                self.final_stats["dodge_chance"]["flat"] += value
+
+            elif passive == "spell_power_scaling":
+                self.spell_power = INT * value
+
+            elif passive == "healing_power":
+                self.healing_power = value
+
 
         # --- 5. Restore HP ratio ---
         self.current_hp = max(1, int(self.max_hp * hp_ratio))

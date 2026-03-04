@@ -2,13 +2,13 @@ from game.enemies.enemy import Enemy
 import random
 
 class OrcWarcaller(Enemy):
-    def __init__(self):
+    def __init__(self, level):
         name = "Orc Warcaller"
         max_hp = 48
         attack = 9
         defense = 6
 
-        super().__init__(name, max_hp, attack, defense)
+        super().__init__(name, level, max_hp, attack, defense)
 
         self.hit_chance = 0.80
         self.dodge_chance = 0.05

@@ -2,8 +2,9 @@ from game.status.status_definitions import STATUS_DEFINITIONS
 from game.status.stat_modifiers import accumulate_status_modifiers
 
 class Enemy:
-    def __init__(self, name, max_hp, attack, defense):
+    def __init__(self, name, level, max_hp, attack, defense):
         self.name = name
+        self.level = level
         self.max_hp = max_hp
         self.current_hp = max_hp
         self.attack = attack
@@ -30,6 +31,10 @@ class Enemy:
         self.passive_hp_regen = 0
         self.passive_mp_regen = 0
         self.passive_sp_regen = 0
+
+        self.is_boss = False
+        self.is_elite = False
+
 
         self.status_effects = []
 

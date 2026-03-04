@@ -1,23 +1,11 @@
 from game.player import Player
-from game.enemies.goblins.goblin_skirmisher import GoblinSkirmisher
-from game.enemies.goblins.goblin_assassin import GoblinAssassin
-from game.enemies.goblins.goblin_saboteur import GoblinSaboteur
-from game.enemies.goblins.goblin_shaman import GoblinShaman
-from game.enemies.orcs.orc_grunt import OrcGrunt
-from game.enemies.orcs.orc_brute import OrcBrute
-from game.enemies.orcs.orc_beserker import OrcBerserker
-from game.enemies.orcs.orc_warcaller import OrcWarcaller
-from game.enemies.trolls.troll_bruiser import TrollBruiser
-from game.enemies.trolls.troll_regenerator import TrollRegenerator
-from game.enemies.trolls.troll_shaman import TrollShaman
-from game.enemies.trolls.troll_firebelly import TrollFirebelly
-
 from game.items.sample_items import (
-    iron_sword,champions_gauntlets, 
-    warriors_charm, minor_helath_potion, 
-    rejuvenation_potion,strength_elixir
+    iron_sword, champions_gauntlets, warriors_charm,
+    minor_helath_potion, rejuvenation_potion, strength_elixir
 )
 from game.combats.engine import CombatEngine
+from game.waves.wave_manager import WaveManager
+
 
 def main():
     player = Player(
@@ -30,13 +18,15 @@ def main():
         base_def=5
     )
 
-    player.skills = ["Fireball", "Cleave","ArcaneNova","IronSkin"]
+    # Set class (IMPORTANT)
+    player.set_class("Warrior")  # or Wizard, Ranger, Cleric
 
     # Equip items
     player.equipment.equip_item("weapon_main", iron_sword)
     player.equipment.equip_item("armor", champions_gauntlets)
     player.equipment.equip_item("amulet", warriors_charm)
 
+    # Add consumables
     player.inventory.add_item(minor_helath_potion)
     player.inventory.add_item(rejuvenation_potion)
     player.inventory.add_item(strength_elixir)
@@ -44,31 +34,16 @@ def main():
     # Recalculate stats
     player.recalculate_stats()
 
-    # Print stats
-    print("\n=== PLAYER STATS ===")
-    print("Attack:", player.attack)
-    print("Defense:", player.defense)
-    print("Crit Chance:", player.crit_chance)
-    print("Max HP:", player.max_hp)
+    print("\n=== PLAYER READY ===")
+    print(f"Class: {player.player_class_name}")
+    print(f"Level: {player.level}")
+    print(f"Attack: {player.attack}")
+    print(f"Defense: {player.defense}")
+    print(f"Max HP: {player.max_hp}")
 
-    """engine = CombatEngine(player, waves=[
-        [GoblinSkirmisher(),GoblinAssassin() ],
-        [GoblinSkirmisher(),GoblinSaboteur() ],
-        [GoblinSkirmisher(), GoblinShaman()],
-        [GoblinSkirmisher(), GoblinAssassin(), GoblinSaboteur()]
-    ])"""
-
-    """engine = CombatEngine(player, waves=[
-        [OrcGrunt(), OrcBrute()],
-        [OrcGrunt(), OrcBerserker()],
-        [OrcGrunt(), OrcWarcaller()]
-    ])"""
-    
-    engine  = CombatEngine(player, waves=[
-        [GoblinSaboteur(),GoblinShaman(), GoblinAssassin()]
-    ])
-    
-    engine.start_combat()
+    # Start the wave run
+    wave_manager = WaveManager(player, CombatEngine)
+    wave_manager.start_run()
 
 
 if __name__ == "__main__":

@@ -2,12 +2,12 @@ from game.enemies.enemy import Enemy
 import random
 
 class TrollFirebelly(Enemy):
-    def __init__(self):
+    def __init__(self, level):
         name = "Troll Firebelly"
         max_hp = 95
         attack = 12
         defense = 9
-        super().__init__(name, max_hp, attack, defense)
+        super().__init__(name, level, max_hp, attack, defense)
 
         self.armor_defense = 2
         self.hit_chance = 0.65

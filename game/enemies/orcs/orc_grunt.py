@@ -2,13 +2,13 @@ from game.enemies.enemy import Enemy
 import random
 
 class OrcGrunt(Enemy):
-    def __init__(self):
+    def __init__(self, level):
         name = "Orc Grunt"
         max_hp = 55
         attack = 10
         defense = 8
 
-        super().__init__(name, max_hp, attack, defense)
+        super().__init__(name, level, max_hp, attack, defense)
 
         self.hit_chance = 0.80
         self.dodge_chance = 0.05

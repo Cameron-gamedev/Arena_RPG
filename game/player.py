@@ -97,6 +97,7 @@ class Player:
         # -----------------------------
         self.player_class_name = None
         self.player_class = None
+        self.class_passives = {}
 
         # Initial stat calculation
         self.recalculate_stats()
@@ -118,6 +119,19 @@ class Player:
         self.passive_sp_regen = self.player_class["regen"]["sp"]
 
         self.class_passives = self.player_class.get("passives", {})
+
+        # Normalize passives so all entries are dicts
+        normalized = {}
+        for key, val in self.class_passives.items():
+            if isinstance(val, int) or isinstance(val, float):
+                normalized[key] = {"base": val, "scale": 0}
+            elif isinstance(val, dict):
+                normalized[key] = val
+            else:
+                raise ValueError(f"Invalid passive format for '{key}': {val}")
+
+        self.class_passives = normalized
+
 
         self.recalculate_stats()
 

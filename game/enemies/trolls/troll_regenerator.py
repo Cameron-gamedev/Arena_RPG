@@ -2,14 +2,14 @@ import random
 from game.enemies.enemy import Enemy
 
 class TrollRegenerator(Enemy):
-    def __init__(self):
+    def __init__(self, level):
         name = "Troll Regenerator"
         max_hp = 90
         attack = 10
         defense = 10
         armor_defense = 3
 
-        super().__init__(name, max_hp, attack, defense)
+        super().__init__(name, level, max_hp, attack, defense)
 
         self.armor_defense = armor_defense
         self.hit_chance = 0.65

@@ -2,12 +2,12 @@ from game.enemies.enemy import Enemy
 import random
 
 class TrollBruiser(Enemy):
-    def __init__(self):
+    def __init__(self, level):
         name = "Troll Bruiser"
         max_hp = 100
         attack = 13
         defense = 11
-        super().__init__(name, max_hp, attack, defense)
+        super().__init__(name, level, max_hp, attack, defense)
 
         self.armor_defense = 3
         self.hit_chance = 0.65   

@@ -2,13 +2,13 @@ from game.enemies.enemy import Enemy
 import random
 
 class GoblinSkirmisher(Enemy):
-    def __init__(self):
+    def __init__(self, level):
         name = "Goblin Skirmisher"
         max_hp = 30
         attack = 6
         defense = 2
         
-        super().__init__(name, max_hp, attack, defense)
+        super().__init__(name, level, max_hp, attack, defense)
 
         self.dodge_chance = 0.20
         self.hit_chance = 0.80

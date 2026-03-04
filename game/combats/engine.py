@@ -8,13 +8,12 @@ from game.combats.ui import display_status
 
 
 class CombatEngine:
-    def __init__(self, player, waves):
+    def __init__(self, player, enemies):
         self.player = player
-        self.waves = waves          # list of lists of enemies
-        self.current_wave = 0
-        self.enemies = self.waves[self.current_wave]
+        self.enemies = enemies  # list of enemy objects
         self.round = 1
         self.combat_over = False
+
 
 
     def run_player_turn(self):
@@ -106,8 +105,9 @@ class CombatEngine:
             if self.player.is_dead():
                 break
 
-            self.check_wave_completion()
-            if self.combat_over:
+            # Check if all enemies are dead
+            if all(e.is_dead() for e in self.enemies):
+                self.combat_over = True
                 break
 
             self.run_enemy_turn()

@@ -41,7 +41,7 @@ class Inventory:
 
             if existing_stack:
                 # Add as much as possible
-                space_left = existing_stack.max_stack - existing_stack.quantity
+                space_left = existing_stack.max_stacks - existing_stack.quantity
 
                 if space_left > 0:
                     amount_to_add = min(space_left, item.quantity)

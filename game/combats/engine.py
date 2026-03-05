@@ -1,6 +1,6 @@
 from game.combats.ui import player_choose_action
 from game.combats.actions import player_attack
-from game.combats.skills import player_choose_skill, use_skill
+from game.combats.skills import player_choose_skill
 from game.combats.items import use_item
 from game.combats.actions import enemy_use_action
 from game.combats.status import process_status_effects, apply_passive_regen

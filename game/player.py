@@ -182,7 +182,7 @@ class Player:
         # Skill unlocks
         if self.level in self.player_class["skills"]:
             for skill_id in self.player_class["skills"][self.level]:
-                self.skills.append(skill_id)
+                self.skills.append(skill_id.lower())
 
         # Heal on level-up
         self.current_hp = min(self.max_hp, self.current_hp + int(self.max_hp * 0.5))
@@ -424,6 +424,23 @@ class Player:
         flat = self.final_stats.get(stat_name, {}).get("flat", 0)
         percent = self.final_stats.get(stat_name, {}).get("percent", 0)
         return (base_value + flat) * (1 + percent)
+
+
+    def get_scaled_stat(self, stat_name):
+        key = str(stat_name).strip().lower()
+
+        aliases = {
+            "str": "strength",
+            "agi": "agility",
+            "vit": "vitality",
+            "int": "intelligence"
+        }
+        key = aliases.get(key, key)
+
+        if key in self.final_stats:
+            return self.final_stats[key].get("final", 0)
+
+        return getattr(self, key, 0)
 
     # ============================================================
     # COMBAT

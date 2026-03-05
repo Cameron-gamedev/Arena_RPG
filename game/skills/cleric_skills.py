@@ -8,7 +8,7 @@ CLERIC_SKILLS = {
         "cooldown": 1,
         "damage": {
             "flat": 10,
-            "scaling": {"INT": 0.5},
+            "scaling": {"intelligence": 0.5},
             "hits": 1
         },
         "status_effects": [],
@@ -23,7 +23,7 @@ CLERIC_SKILLS = {
         "cooldown": 2,
         "healing": {
             "flat": 12,
-            "scaling": {"INT": 0.8}
+            "scaling": {"intelligence": 0.8}
         },
         "status_effects": [],
         "description": "Restore health to an ally."
@@ -53,7 +53,7 @@ CLERIC_SKILLS = {
         "cooldown": 3,
         "damage": {
             "flat": 8,
-            "scaling": {"INT": 0.5},
+            "scaling": {"intelligence": 0.5},
             "hits": 1
         },
         "status_effects": [],
@@ -68,7 +68,7 @@ CLERIC_SKILLS = {
         "cooldown": 5,
         "damage": {
             "flat": 22,
-            "scaling": {"INT": 1.0},
+            "scaling": {"intelligence": 1.0},
             "hits": 1
         },
         "status_effects": [],

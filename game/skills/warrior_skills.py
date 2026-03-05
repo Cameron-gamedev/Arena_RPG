@@ -8,7 +8,7 @@ WARRIOR_SKILLS = {
         "cooldown": 1,
         "damage": {
             "flat": 10,
-            "scaling": {"STR": 0.6},
+            "scaling": {"strength": 0.6},
             "hits": 1
         },
         "status_effects": [],
@@ -23,7 +23,7 @@ WARRIOR_SKILLS = {
         "cooldown": 2,
         "damage": {
             "flat": 6,
-            "scaling": {"STR": 0.4},
+            "scaling": {"strength": 0.4},
             "hits": 1
         },
         "status_effects": [
@@ -72,7 +72,7 @@ WARRIOR_SKILLS = {
         "cooldown": 3,
         "damage": {
             "flat": 7,
-            "scaling": {"STR": 0.4},
+            "scaling": {"strength": 0.4},
             "hits": 1
         },
         "status_effects": [],
@@ -87,7 +87,7 @@ WARRIOR_SKILLS = {
         "cooldown": 5,
         "damage": {
             "flat": 20,
-            "scaling": {"STR": 1.0},
+            "scaling": {"strength": 1.0},
             "hits": 1
         },
         "status_effects": [],

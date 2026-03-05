@@ -1,6 +1,7 @@
 from game.items.item_types import ItemType
 import warnings
 
+
 class Equipment:
     def __init__(self, slot_rules):
         # Validate slot names
@@ -8,21 +9,22 @@ class Equipment:
             if not self._is_valid_slot_name(slot):
                 raise ValueError(
                     f" - Invalid slot name: {slot}.\n"
-                     " - Slot names must use '_' and start with a lowercase letter."
-                     " - Contain only letters, numbers, and underscores. Must not end with '_'"
+                    " - Slot names must use '_' and start with a lowercase letter."
+                    " - Contain only letters, numbers, and underscores. Must not end with '_'"
                 )
-           
+
         # Defensive copy of slot rules
         self.slot_rules = {
             slot: {
-                **allowed, 
+                **allowed,
                 "allowed_types": allowed["allowed_types"][:]
             }
             for slot, allowed in slot_rules.items()
         }
-        
+
         # Initialize empty slots
-        self.slots = {slot:None for slot in slot_rules}
+        self.slots = {slot: None for slot in slot_rules}
+
     # ------------------------------------
     # Item conversion
     # ------------------------------------
@@ -34,38 +36,37 @@ class Equipment:
                 f"Error while equipping item '{item}' "
                 f"(type='{item.item_type}') into slot '{slot_name}': {e}"
             ) from e
+
     # ------------------------------------
     # Slot Validation
     # ------------------------------------
     def _is_valid_slot_name(self, name):
         # snake_case + numbers, must start with a letter
-        return(
+        return (
             name.isidentifier()
             and name[0].islower()
             and not name.endswith("_")
         )
-    
+
     def _validate_slot(self, slot):
-        # slot must exist
         if slot not in self.slot_rules:
             raise ValueError(f" - Slot '{slot}' does not exist in this equipment layout.")
+
     # ------------------------------------
     # Item Validation
     # ------------------------------------
     def _validate_item(self, item):
-        # Item must have a valid item_type
         if not hasattr(item, "item_type"):
             raise ValueError(
-                f" - Item{item} has no 'item_type' attribute.\n"
-                " - All equippable items must define 'item_type' "
+                f" - Item {item} has no 'item_type' attribute.\n"
+                " - All equippable items must define 'item_type'."
             )
-        item_type = item.item_type
 
-        # Item must be a string
+        item_type = item.item_type
         if not isinstance(item_type, str):
             raise ValueError(
                 f" - Invalid item_type for item '{item}'.\n"
-                " - 'item_type must be a string."
+                " - 'item_type' must be a string."
             )
 
     def _validate_item_type(self, slot_name, item_type, item):
@@ -87,60 +88,61 @@ class Equipment:
                 f"Cannot equip item '{item}' (type='{item_type.value}') "
                 f"into slot '{slot_name}'. Allowed types: {normalized_allowed}"
             )
+
     # ------------------------------------
-    # Item Modifiers
-    # ------------------------------------       
-    
-    def _validate_modifier_value(self, mods, item):
-        # Validate each modifier entry
-        for stat, entry in mods.items():
-            if not isinstance(entry, dict):
-                raise ValueError(
-                    f"Modifier for stat '{stat}' on item '{item}' must be a dictionary.\n"
-                    "Expected: {'value': number, 'is_percent': bool}"
-                )
+    # Item Modifiers (NEW FORMAT)
+    # ------------------------------------
+    def _validate_modifiers(self, item):
+        """
+        Validates the modifiers dictionary for the NEW format:
+            modifiers = {
+                "flat":    {stat: number, ...},
+                "percent": {stat: number, ...}
+            }
+        """
+        if not hasattr(item, "modifiers"):
+            raise ValueError(
+                f"Item '{item}' is missing a 'modifiers' attribute.\n"
+                "Items must define a modifiers dictionary (empty dict allowed)."
+            )
 
-            if "value" not in entry:
-                raise ValueError(
-                    f"Modifier for stat '{stat}' on item '{item}' is missing 'value'."
-                )
+        mods = item.modifiers
 
-            if "is_percent" not in entry:
-                raise ValueError(
-                    f"Modifier for stat '{stat}' on item '{item}' is missing 'is_percent'."
-                )
+        # Allow empty or None
+        if mods is None or mods == {}:
+            return
 
-            value = entry["value"]
-            is_percent = entry["is_percent"]
+        if not isinstance(mods, dict):
+            raise ValueError(
+                f"Item '{item}' has invalid modifiers type {type(mods).__name__}.\n"
+                "Modifiers must be a dictionary."
+            )
 
+        flat = mods.get("flat", {})
+        percent = mods.get("percent", {})
+
+        if not isinstance(flat, dict) or not isinstance(percent, dict):
+            raise ValueError(
+                f"Item '{item}' modifiers must contain 'flat' and 'percent' dicts.\n"
+                f"Got: flat={type(flat).__name__}, percent={type(percent).__name__}"
+            )
+
+        # Validate flat values
+        for stat, value in flat.items():
             if not isinstance(value, (int, float)):
                 raise ValueError(
-                    f"Modifier value for stat '{stat}' on item '{item}' must be a number.\n"
+                    f"Flat modifier for stat '{stat}' on item '{item}' must be a number.\n"
                     f"Got: {value} ({type(value).__name__})"
                 )
 
-            if not isinstance(is_percent, bool):
+        # Validate percent values
+        for stat, value in percent.items():
+            if not isinstance(value, (int, float)):
                 raise ValueError(
-                    f"'is_percent' for stat '{stat}' on item '{item}' must be a boolean.\n"
-                    f"Got: {is_percent} ({type(is_percent).__name__})"
+                    f"Percent modifier for stat '{stat}' on item '{item}' must be a number.\n"
+                    f"Got: {value} ({type(value).__name__})"
                 )
-            
-    def _accumulate_modifier(self, totals, stat, entry):
-        """
-        Add a single modifier entry into the totals dictionary.
-        totals = {
-            'flat': {stat: value},
-            'percent': {stat: value}
-        }
-        """
-        value = entry["value"]
-        is_percent = entry["is_percent"]
 
-        if is_percent:
-            totals["percent"][stat] = totals["percent"].get(stat, 0) + value
-        else:
-            totals["flat"][stat] = totals["flat"].get(stat, 0) + value
-    
     def _apply_percent_math(self, base, flat, percent):
         """
         Apply flat and percent modifiers to a base stat.
@@ -151,79 +153,44 @@ class Equipment:
             percent = 0.30  # 30%
             result = (10 + 3) * (1 + 0.30) = 16.9
         """
-        # Add flat first
         total = base + flat
-
-        # Apply additive percent
         total *= (1 + percent)
-
         return total
-
-    def _validate_modifiers(self, item):
-        """
-        Validates the modifiers dictionary.
-        Empty modifiers {} are allowed.
-        """
-        if not hasattr(item, "modifiers"):
-            raise ValueError(
-                f"Item '{item}' is missing a 'modifiers' attribute.\n"
-                "Items must define a modifiers dictionary (empty dict allowed)."
-            )
-
-        mods = item.modifiers
-
-        # Allow empty modifiers
-        if mods is None or mods == {}:
-            return
-
-        if not isinstance(mods, dict):
-            raise ValueError(
-                f"Item '{item}' has invalid modifiers type {type(mods).__name__}.\n"
-                "Modifiers must be a dictionary."
-            )
-
-        # Validate each modifier entry
-        self._validate_modifier_value(mods, item)
-
 
     def get_total_modifiers(self, base_stats=None):
         """
-        Returns final stat values after applying flat and percent modifiers.
-        base_stats: optional dict of base stat values.
-        If base_stats is None, treat base as 0.
+        Aggregates all equipment modifiers into:
+            {
+                "flat":    {stat: total_flat_bonus},
+                "percent": {stat: total_percent_bonus}
+            }
+        base_stats is unused here but kept for compatibility.
         """
         totals = {
             "flat": {},
             "percent": {}
         }
 
-        # Step 1: accumulate modifiers
         for slot, item in self.slots.items():
             if item is None:
                 continue
 
             self._validate_modifiers(item)
+            mods = item.modifiers or {"flat": {}, "percent": {}}
 
-            for stat, entry in item.modifiers.items():
-                self._accumulate_modifier(totals, stat, entry)
+            # Flat modifiers
+            for stat, value in mods.get("flat", {}).items():
+                totals["flat"][stat] = totals["flat"].get(stat, 0) + value
 
-        
+            # Percent modifiers
+            for stat, value in mods.get("percent", {}).items():
+                totals["percent"][stat] = totals["percent"].get(stat, 0) + value
 
         return totals
 
     # ------------------------------------
     # Item Management
     # ------------------------------------
-    def can_equip(self, slot, item):
-        
-        # Item & Slot validation
-        self._validate_slot(slot)
-        self._validate_item(item)
-
-        # Item type must be allowed in this slot
-        allowed_types = self.slot_rules[slot]
-        return item.item_type in allowed_types
-    
     def can_equip(self, slot, item):
         self._validate_slot(slot)
         self._validate_item(item)
@@ -255,15 +222,11 @@ class Equipment:
         return old_item
 
     def unequip_item(self, slot):
-        # Validate slots exists
         self._validate_slot(slot)
 
         if self.slots[slot] is None:
-            return False # If slot is empty, return false
-        
-        # Remove and return item
+            return False
+
         old_item = self.slots[slot]
         self.slots[slot] = None
         return old_item
-    
-    

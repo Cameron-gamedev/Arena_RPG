@@ -24,6 +24,27 @@ STATUS_DEFINITIONS = {
     "BuffDodgeChance":  {"type": "buff", "stat": "dodge_chance", "stacking": "refresh"},
 
     # ============================
+    # NEW BUFFS (added for skills)
+    # ============================
+    "BuffDefense": {
+        "type": "buff",
+        "stat": "defense",
+        "stacking": "refresh"
+    },
+
+    "BuffDefenseFlat": {
+        "type": "buff",
+        "stat": "defense",
+        "stacking": "refresh"
+    },
+
+    "BuffSpellPower": {
+        "type": "buff",
+        "stat": "spell_power",
+        "stacking": "refresh"
+    },
+
+    # ============================
     # COMBAT BUFFS (Orc + General)
     # ============================
     "BattleFury":       {"type":"buff", "stat":"attack",        "flat":0, "percent":0.20, "stacking":"refresh"},
@@ -37,6 +58,12 @@ STATUS_DEFINITIONS = {
     "ThickHideArmor":   {"type":"buff", "stat":"armor_defense", "flat":1, "percent":0.00, "stacking":"refresh"},
     "EssenceDefense":   {"type":"buff", "stat":"defense",       "flat":1, "percent":0.00, "stacking":"refresh"},
 
+    # Warrior Attack Buff
+    "AttackUp": {
+        "type": "buff",
+        "stat": "attack",
+        "stacking": "refresh"
+    },
 
     # ============================
     # DEBUFFS
@@ -52,11 +79,27 @@ STATUS_DEFINITIONS = {
     "DodgeDown":     {"type": "debuff", "stat": "dodge_chance",  "percent": -0.05, "stacking": "refresh"},
     "AshenVeil":     {"type": "debuff", "stat": "hit_chance",    "percent": -0.15, "stacking": "refresh"},
 
-    
     # ============================
     # CROWD CONTROL & SPECIAL
     # ============================
-    "Stun":    {"type": "stun", "stacking": "refresh"},
-    "Stagger": {"type": "debuff", "stat": "sp_regen", "percent": -1.00,"stacking": "refresh", "hit_chance_penalty": -0.10},
-    "Shock":   {"type": "debuff", "stat": "defense",  "percent": -0.10,"stacking": "refresh", "stun_chance": 0.20}
+    "Stun": {
+        "type": "stun",
+        "stacking": "refresh"
+    },
+
+    "Stagger": {
+        "type": "debuff",
+        "stat": "sp_regen",
+        "percent": -1.00,
+        "stacking": "refresh",
+        "hit_chance_penalty": -0.10
+    },
+
+    "Shock": {
+        "type": "debuff",
+        "stat": "defense",
+        "percent": -0.10,
+        "stacking": "refresh",
+        "stun_chance": 0.20
+    }
 }

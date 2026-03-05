@@ -3,6 +3,11 @@ from game.combats.healing import apply_heal
 
 
 def process_status_effects(target):
+    """
+    Handles DOT, HOT, and duration ticking for all status effects.
+    Removes expired effects and recalculates stats when needed.
+    """
+
     if not hasattr(target, "status_effects") or not target.status_effects:
         return
     if target.is_dead():
@@ -17,12 +22,15 @@ def process_status_effects(target):
             continue
 
         effect_type = definition["type"]
-        data = effect["data"]
+        data = effect.get("data", {})
 
-        # HOT
+        # -----------------------------
+        # HEAL OVER TIME (HOT)
+        # -----------------------------
         if effect_type == "hot":
             resource = definition["target"]
             amount = data.get("amount_per_turn", 0)
+
             apply_heal(target, amount, resource=resource, source=name)
 
             if resource == "mp":
@@ -37,31 +45,43 @@ def process_status_effects(target):
                 restored = target.current_sp - before
                 print(f"{target.name} regenerates {restored} SP from {name}.")
 
-        # DOT
+        # -----------------------------
+        # DAMAGE OVER TIME (DOT)
+        # -----------------------------
         elif effect_type == "dot":
             amount = data.get("amount_per_turn", 0)
             applier = data.get("applier")
-            if applier is not None and hasattr(applier, "name"):
-                attacker_obj = applier
-            else:
-                attacker_obj = None
 
+            attacker_obj = applier if hasattr(applier, "name") else None
             target.take_damage(attacker=attacker_obj, amount=amount, source=name)
 
-
-
+        # -----------------------------
+        # TICK DURATION
+        # -----------------------------
         effect["duration"] -= 1
         if effect["duration"] <= 0:
             expired.append(effect)
 
+    # -----------------------------
+    # REMOVE EXPIRED EFFECTS
+    # -----------------------------
     for e in expired:
         target.status_effects.remove(e)
 
+    # -----------------------------
+    # RECALCULATE STATS IF ANY BUFF/DEBUFF EXPIRED
+    # -----------------------------
+    if expired:
+        target.recalculate_stats()
+
 
 def process_regen_effects(player):
-    if not player.active_regen_effects:
-        return
-    if player.is_dead():
+    """
+    Handles the separate regen system (active_regen_effects).
+    This is distinct from HOT effects and is used for skills that apply regen.
+    """
+
+    if not player.active_regen_effects or player.is_dead():
         return
 
     print("\n-- Regen Effects --")
@@ -76,11 +96,13 @@ def process_regen_effects(player):
             player.current_hp = min(player.max_hp, player.current_hp + amount)
             healed = player.current_hp - before
             print(f"{player.name} regenerates {healed} HP from ongoing effects.")
+
         elif target == "mp":
             before = player.current_mp
             player.current_mp = min(player.max_mp, player.current_mp + amount)
             restored = player.current_mp - before
             print(f"{player.name} regenerates {restored} MP from ongoing effects.")
+
         elif target == "sp":
             before = player.current_sp
             player.current_sp = min(player.max_sp, player.current_sp + amount)
@@ -95,38 +117,27 @@ def process_regen_effects(player):
         player.active_regen_effects.remove(e)
 
 
-def process_buffs(player):
-    if not player.active_buffs:
-        return
-
-    expired = []
-    for buff in player.active_buffs:
-        buff["turns_left"] -= 1
-        if buff["turns_left"] <= 0:
-            expired.append(buff)
-
-    for b in expired:
-        player.active_buffs.remove(b)
-
-    if expired:
-        player.recalculate_stats()
-        print("\n-- Buffs Expired --")
-        for b in expired:
-            print(f"{b['stat']} buff has worn off.")
-
-
 def list_status_effects(target):
+    """
+    Returns a simple string summary of active status effects.
+    """
     if not target.status_effects:
         return "None"
+
     parts = []
     for effect in target.status_effects:
         name = effect["name"]
         duration = effect["duration"]
         parts.append(f"{name} ({duration})")
+
     return ", ".join(parts)
 
 
 def apply_passive_regen(target):
+    """
+    Applies passive regen (HP/MP/SP) from class identity or equipment.
+    """
+
     # HP regen
     if target.passive_hp_regen > 0 and not target.is_dead():
         before = target.current_hp
@@ -153,7 +164,12 @@ def apply_passive_regen(target):
 
 
 def get_regen_summary(player):
+    """
+    Returns a dict summarizing total regen per turn from active_regen_effects.
+    """
     summary = {"hp": 0, "mp": 0, "sp": 0}
+
     for effect in player.active_regen_effects:
         summary[effect["target"]] += effect["amount_per_turn"]
+
     return summary

@@ -111,7 +111,9 @@ class Enemy:
             "duration": duration,
             "data": dict(data)
         })
-
+        
+        if effect_type in ("buff", "debuff"):
+            self.recalc_stats()
 
     def has_status(self, name):
         return any(e["name"] == name and e["duration"] > 0  for e in self.status_effects)

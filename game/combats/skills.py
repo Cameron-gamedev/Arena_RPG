@@ -1,5 +1,4 @@
 from game.combats.damage import calculate_damage
-from game.status.status_definitions import STATUS_DEFINITIONS
 from game.combats.deal_damage import deal_damage
 from game.status.apply_status_effects import apply_status_effects
 
@@ -8,7 +7,8 @@ from game.status.apply_status_effects import apply_status_effects
 # Skill selection UI
 # ============================================================
 def player_choose_skill(player):
-    from game.skills.skills import SKILLS_DB
+    from game.skills.skill_loader import ALL_SKILLS
+
 
     if not hasattr(player, "skills") or len(player.skills) == 0:
         print("You have no skills.")
@@ -16,7 +16,7 @@ def player_choose_skill(player):
     
     print("\nChoose a skill:")
     for i, skill_id in enumerate(player.skills, start=1):
-        skill = SKILLS_DB[skill_id]
+        skill = ALL_SKILLS[skill_id]
         remaining = player.skill_cooldowns.get(skill_id, 0)
         cd_text = f"(Cooldown: {remaining})" if remaining > 0 else "Ready"
         print(f" {i}. {skill['name']} - {skill['description']} | {cd_text}")
@@ -140,7 +140,6 @@ def choose_multi_targets(player, skill, enemies):
             effect_list=skill.get("status_effects", []),
             hit_landed=enemy_hit
         )
-
 
 
 # ============================================================

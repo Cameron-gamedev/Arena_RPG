@@ -5,6 +5,7 @@ def player_choose_action():
     print(" 1. Attack")
     print(" 2. Skills")
     print(" 3. Items")
+    print(" 4. Status")
   
     while True:
         choice = input("Action number: ").strip()
@@ -15,6 +16,8 @@ def player_choose_action():
             return "skills"
         elif choice == "3":
             return "items"
+        elif choice == "4":
+            return "status"
         else:
             print("Invalid choice. Try again.")
 

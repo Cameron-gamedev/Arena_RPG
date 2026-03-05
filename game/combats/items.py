@@ -1,50 +1,33 @@
 from game.status.status_definitions import STATUS_DEFINITIONS
 
-def use_item(player, inventory):
-    print("\nChoose an item:")
 
-    indexed_slots = []
-
-    for i, slot in enumerate(inventory.slots):
-        if slot is None:
-            continue
-        indexed_slots.append((i, slot))
-        print(f" {len(indexed_slots)}. {slot.name} x{slot.quantity}")
-
-    print(" b. Back")
-
-    if not indexed_slots:
-        print("You have no items.")
+def use_item(player, inventory, index):
+    # Validate index
+    if index < 0 or index >= len(inventory.slots):
+        print("Invalid item selection.")
         return False
-    
-    while True:
-        choice = input("Item number: ").strip()
 
-        if choice.lower() == "b":
-            return False
-        
-        if not choice.isdigit():
-            print("Invalid choice.")
-            continue
+    item = inventory.slots[index]
+    if item is None:
+        print("No item in that slot.")
+        return False
 
-        idx = int(choice) - 1
-        if idx < 0 or idx >= len(indexed_slots):
-            print("Invalid choice.")
-            continue
-
-        slot_index, item = indexed_slots[idx]
-
-        return apply_item_effect(player, inventory, slot_index, item)
+    # Apply the effect
+    result = apply_item_effect(player, inventory, index, item)
+    return result
 
 
 def apply_item_effect(player, inventory, slot_index, item):
     if item.effect is None:
         print("This item has no effect.")
         return False
-    
+
     effect = item.effect
     kind = effect.get("kind")
 
+    # ------------------------------------------------------------
+    # INSTANT RESTORE (HP/MP/SP)
+    # ------------------------------------------------------------
     if kind == "restore_instant":
         target = effect.get("target")
         percent = effect.get("percent", 0)
@@ -57,12 +40,12 @@ def apply_item_effect(player, inventory, slot_index, item):
             player.current_hp = min(player.max_hp, player.current_hp + amount)
             healed = player.current_hp - before
             print(f"{item.name} restores {healed} HP!")
-        
+
         elif target == "mp":
             max_val = player.max_mp
             before = player.current_mp
             amount = int(max_val * percent) + flat
-            player.current_mp = min(player.max_max, player.current_mp + amount)
+            player.current_mp = min(player.max_mp, player.current_mp + amount)
             restored = player.current_mp - before
             print(f"{item.name} restores {restored} MP!")
 
@@ -77,7 +60,10 @@ def apply_item_effect(player, inventory, slot_index, item):
         else:
             print("Unknown restore target.")
             return False
-    
+
+    # ------------------------------------------------------------
+    # RESTORE OVER TIME (RegenHP / RegenMP / RegenSP)
+    # ------------------------------------------------------------
     elif kind == "restore_over_time":
         target = effect.get("target")
         percent = effect.get("percent", 0)
@@ -85,23 +71,19 @@ def apply_item_effect(player, inventory, slot_index, item):
 
         if target == "hp":
             max_val = player.max_hp
+            status_name = "RegenHP"
         elif target == "mp":
             max_val = player.max_mp
+            status_name = "RegenMP"
         elif target == "sp":
             max_val = player.max_sp
+            status_name = "RegenSP"
         else:
             print("Unknown regen target.")
             return False
-        
+
         total_amount = int(max_val * percent)
         amount_per_turn = max(1, total_amount // duration)
-
-        if target == "hp":
-            status_name = "RegenHP"
-        elif target == "mp":
-            status_name = "RegenMP"
-        elif target == "sp":
-            status_name = "RegenSP"
 
         player.apply_status(
             name=status_name,
@@ -109,43 +91,37 @@ def apply_item_effect(player, inventory, slot_index, item):
             duration=duration,
             data={"amount_per_turn": amount_per_turn}
         )
- 
+
         print(f"{item.name} will restore {total_amount} {target.upper()} over {duration} turns!")
 
-    elif kind == "buff":
-        stat = effect.get("stat")
-        flat = effect.get("flat", 0)
-        percent = effect.get("percent", 0)
-        duration = effect.get("duration", 1)
 
-        status_name = f"Buff{stat.capitalize()}"
-        player.apply_status(
-            name=status_name,
-            effect_type="buff",
-            duration=duration,
-            data={"flat": flat, "percent": percent}
-        )        
-        
-        print(f"{item.name} increases {stat} for {duration} turns!")
-
+    # ------------------------------------------------------------
+    # APPLY A STATUS EFFECT (poison, bleed, etc.)
+    # ------------------------------------------------------------
     elif kind == "status":
         status_name = effect.get("status_name")
         duration = effect.get("duration", 1)
-        amount_per_turn = effect.get("amount_per_turn", 0)
+
+        # NEW: pull full data dict (flat, percent, amount_per_turn, stacking, etc.)
+        data = effect.get("data", {})
 
         player.apply_status(
             name=status_name,
             effect_type=STATUS_DEFINITIONS[status_name]["type"],
             duration=duration,
-            data={"amount_per_turn": amount_per_turn}
+            data=data
         )
 
-        print(f"{item.name} inflicts {status_name} for {duration} turns!")
+        print(f"{item.name} applies {status_name} for {duration} turns!")
+
 
     else:
         print("This type of effect is not implemented yet.")
         return False
-    
+
+    # ------------------------------------------------------------
+    # CONSUME ITEM (stackable or single)
+    # ------------------------------------------------------------
     item.quantity -= 1
     if item.quantity <= 0:
         inventory.slots[slot_index] = None

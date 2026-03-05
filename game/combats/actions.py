@@ -9,9 +9,9 @@ import random
 # ============================================================
 def player_attack(player, enemy):
     print(f"[DEBUG] Player hit_chance={player.hit_chance:.3f}, Enemy dodge={enemy.dodge_chance:.3f}")
-    print("="*50)
+    print("=" * 50)
 
-    damage, is_crit, dodged = calculate_damage(player, enemy)
+    damage, is_crit, dodged = calculate_damage(player, enemy, skill=None)
 
     if dodged:
         print(">>> DODGED!!!")
@@ -21,7 +21,6 @@ def player_attack(player, enemy):
         print(">>> CRITICAL HIT!")
 
     enemy.take_damage(player, damage, source="Basic Attack")
-
 
 
 # ============================================================

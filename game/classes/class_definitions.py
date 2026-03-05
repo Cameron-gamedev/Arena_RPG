@@ -7,11 +7,11 @@ CLASS_DEFINITIONS = {
         "between_wave_regen": {"hp_percent": 0.30, "mp_percent": 0.10, "sp_percent": 0.80},
         "passives": {"armor_bonus": 2},
         "skills": {
-            1: ["Slash"],
-            3: ["ShieldBash"],
-            5: ["BattleCry"],
-            8: ["Whirlwind"],
-            12: ["Execution"]
+            1: ["slash","iron_skin","battle_cry"],
+            2: ["shield_bash"],
+            4: ["battle_cry"],
+            6: ["whirlwind"],
+            8: ["execution"]
         }
     },
 
@@ -23,11 +23,11 @@ CLASS_DEFINITIONS = {
         "between_wave_regen": {"hp_percent": 0.10, "mp_percent": 0.80, "sp_percent": 0.20},
         "passives": {"spell_power_scaling": 0.20},
         "skills": {
-            1: ["MagicBolt"],
-            2: ["Ignite"],
-            4: ["FrostNova"],
-            7: ["ArcaneSurge"],
-            12: ["Meteor"]
+            1: ["magic_bolt"],
+            2: ["ignite"],
+            4: ["frost_nova"],
+            6: ["arcane_surge"],
+            8: ["meteor"]
         }
     },
 
@@ -39,11 +39,11 @@ CLASS_DEFINITIONS = {
         "between_wave_regen": {"hp_percent": 0.20, "mp_percent": 0.40, "sp_percent": 0.40},
         "passives": {"crit_bonus": 0.05, "dodge_bonus": 0.05},
         "skills": {
-            1: ["QuickShot"],
-            3: ["PoisonArrow"],
-            6: ["MultiShot"],
-            10: ["EagleEye"],
-            12: ["RainOfArrows"]
+            1: ["quick_shot"],
+            2: ["poison_arrow"],
+            4: ["multi_shot"],
+            6: ["eagle_eye"],
+            8: ["rain_of_arrows"]
         }
     },
 
@@ -55,11 +55,11 @@ CLASS_DEFINITIONS = {
         "between_wave_regen": {"hp_percent": 0.25, "mp_percent": 0.60, "sp_percent": 0.20},
         "passives": {"healing_power": 0.15},
         "skills": {
-            1: ["Smite"],
-            2: ["Heal"],
-            4: ["Bless"],
-            7: ["HolyNova"],
-            12: ["DivineJudgment"]
+            1: ["smite"],
+            2: ["heal"],
+            4: ["bless"],
+            6: ["holy_nova"],
+            8: ["divine_judgment"]
         }
     }
 }

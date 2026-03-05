@@ -8,7 +8,7 @@ WIZARD_SKILLS = {
         "cooldown": 1,
         "damage": {
             "flat": 12,
-            "scaling": {"INT": 0.7},
+            "scaling": {"intelligence": 0.7},
             "hits": 1
         },
         "status_effects": [],
@@ -39,7 +39,7 @@ WIZARD_SKILLS = {
         "cooldown": 3,
         "damage": {
             "flat": 8,
-            "scaling": {"INT": 0.5},
+            "scaling": {"intelligence": 0.5},
             "hits": 1
         },
         "status_effects": [
@@ -76,7 +76,7 @@ WIZARD_SKILLS = {
         "cooldown": 6,
         "damage": {
             "flat": 25,
-            "scaling": {"INT": 1.2},
+            "scaling": {"intelligence": 1.2},
             "hits": 1
         },
         "status_effects": [

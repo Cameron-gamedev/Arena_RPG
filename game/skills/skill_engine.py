@@ -48,8 +48,13 @@ def execute_skill(user, skill_id, enemies, allies=None):
     skill = ALL_SKILLS[skill_id]
 
     # -------------------------
-    # Resource cost check
+    # Cooldown + resource checks
     # -------------------------
+    remaining = user.skill_cooldowns.get(skill_id, 0)
+    if remaining > 0:
+        print(f"{skill['name']} is on cooldown for {remaining} more turn(s)!")
+        return "cancel"
+
     cost_mp = skill["cost"].get("mp", 0)
     cost_sp = skill["cost"].get("sp", 0)
 
@@ -167,8 +172,9 @@ def apply_healing_skill(user, skill, target, allies):
     scaling = heal_block.get("scaling", {})
 
     for stat_name, coeff in scaling.items():
-        final_attr = getattr(user, f"final_{stat_name}", None)
-        if final_attr is None:
+        if hasattr(user, "get_scaled_stat"):
+            final_attr = user.get_scaled_stat(stat_name)
+        else:
             final_attr = getattr(user, stat_name.lower(), 0)
         base += final_attr * coeff
 

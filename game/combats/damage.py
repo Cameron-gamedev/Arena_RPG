@@ -40,9 +40,9 @@ def calculate_damage(attacker, defender, skill=None):
         # Scaling bonus
         scaling = dmg_info.get("scaling", {})
         for stat_name, factor in scaling.items():
-            # Try final_STAT first, then raw attribute
-            final_attr = getattr(attacker, f"final_{stat_name}", None)
-            if final_attr is None:
+            if hasattr(attacker, "get_scaled_stat"):
+                final_attr = attacker.get_scaled_stat(stat_name)
+            else:
                 final_attr = getattr(attacker, stat_name.lower(), 0)
             base_damage += final_attr * factor
 

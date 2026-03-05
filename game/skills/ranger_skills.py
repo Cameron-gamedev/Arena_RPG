@@ -8,7 +8,7 @@ RANGER_SKILLS = {
         "cooldown": 1,
         "damage": {
             "flat": 8,
-            "scaling": {"AGI": 0.5},
+            "scaling": {"agility": 0.5},
             "hits": 1
         },
         "status_effects": [],
@@ -39,7 +39,7 @@ RANGER_SKILLS = {
         "cooldown": 3,
         "damage": {
             "flat": 5,
-            "scaling": {"AGI": 0.3},
+            "scaling": {"agility": 0.3},
             "hits": 3
         },
         "status_effects": [],
@@ -70,7 +70,7 @@ RANGER_SKILLS = {
         "cooldown": 5,
         "damage": {
             "flat": 10,
-            "scaling": {"AGI": 0.6},
+            "scaling": {"agility": 0.6},
             "hits": 1
         },
         "status_effects": [

@@ -4,13 +4,14 @@ from game.modifiers.modifier_engine import roll_modifiers, apply_modifiers, disp
 from game.rewards.xp_system import calculate_wave_xp
 from game.rewards.loot_generator import generate_wave_loot
 from game.waves.wave_definitions import WAVE_DEFINITIONS
+from game.save_system import save_run_state
 
 
 class WaveManager:
-    def __init__(self, player, combat_engine_class):
+    def __init__(self, player, combat_engine_class, current_wave_index=0):
         self.player = player
         self.combat_engine_class = combat_engine_class
-        self.current_wave_index = 0
+        self.current_wave_index = current_wave_index
 
 
     def start_run(self):
@@ -25,8 +26,14 @@ class WaveManager:
                 return
 
             self.current_wave_index += 1
+            self.save_checkpoint(save_type="checkpoint")
 
         print("\n=== Victory! You cleared all waves! ===")
+
+
+    def save_checkpoint(self, save_type="checkpoint"):
+        save_run_state(self.player, self.current_wave_index, save_type=save_type)
+        print(f"[Save] {save_type.title()} saved for wave {self.current_wave_index + 1}.")
 
 
     def run_wave(self, wave):
@@ -127,6 +134,7 @@ class WaveManager:
             print("6. Continue to Next Wave")
             print("7. Drop Item")
             print("8. View Equipped Items")
+            print("9. Save and Quit")
 
             choice = input("Choose an option: ").strip()
 
@@ -154,6 +162,11 @@ class WaveManager:
 
             elif choice == "8":
                 self.show_equipped_items()
+
+            elif choice == "9":
+                self.save_checkpoint(save_type="quick")
+                print("Run saved. Exiting game.")
+                raise SystemExit
 
             else:
                 print("Invalid choice.")
